@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Escala Comfort-B</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1f6fb2">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+:root{--bg:#eef3f8;--card:#fff;--tx:#17212b;--mut:#5d6b7a;--bd:#d5dee8;--ac:#1f6fb2;--acbg:#e1eefa;--ok:#2a9d6a;--wa:#d98a1c;--er:#d1495b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1620;--card:#182230;--tx:#e6edf5;--mut:#92a3b5;--bd:#2b3a4d;--ac:#5aa9ee;--acbg:#1b3550;--ok:#4fcf9a;--wa:#f2b04a;--er:#f27a88;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1620;--card:#182230;--tx:#e6edf5;--mut:#92a3b5;--bd:#2b3a4d;--ac:#5aa9ee;--acbg:#1b3550;--ok:#4fcf9a;--wa:#f2b04a;--er:#f27a88;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:110px}
+main{max-width:640px;margin:0 auto;padding:12px}
+h1{font-size:20px;margin:4px 0 2px;color:var(--ac)}.sub{color:var(--mut);font-size:13px;margin:0 0 12px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:12px}
+.card h2{font-size:15px;margin:0 0 8px;display:flex;justify-content:space-between;gap:8px}
+.card h2 small{color:var(--mut);font-weight:400}
+.opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;background:none;color:inherit;border:1px solid var(--bd);border-radius:10px;padding:10px;margin-top:6px;font:inherit;cursor:pointer}
+.opt b{min-width:24px;height:24px;border-radius:50%;background:var(--bd);display:grid;place-items:center;font-size:13px}
+.opt.on{border-color:var(--ac);background:var(--acbg)}.opt.on b{background:var(--ac);color:var(--bg)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg .opt{margin:0;justify-content:center;font-weight:600}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--bd);padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px))}
+.in{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.tot{font-size:30px;font-weight:700;min-width:64px}.tot small{font-size:13px;color:var(--mut);font-weight:400}
+.res{flex:1;font-size:14px;font-weight:600}.res span{display:block;font-weight:400;color:var(--mut);font-size:12px}
+.btn{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;padding:9px 12px;font:inherit;font-size:14px;cursor:pointer}
+.btn.p{background:var(--ac);color:var(--bg);border-color:var(--ac);font-weight:600}
+.note{color:var(--mut);font-size:12px;margin:4px 0 0}
+</style></head><body><main>
+<h1>Escala Comfort-B</h1>
+<p class="sub">Sedação, conforto e dor em pacientes pediátricos · pontuação 6–30</p>
+<div class="card"><h2>Condição respiratória</h2><div class="seg" id="mode"></div>
+<p class="note">Ventilado: pontua “resposta respiratória”. Espontâneo: pontua “choro”.</p></div>
+<div id="items"></div>
+<p class="note">Ferramenta de apoio. Os pontos de corte variam conforme o protocolo do serviço; julgue sempre clinicamente.</p>
+</main>
+<div class="bar"><div class="in">
+<div class="tot" id="tot">–<small> /30</small></div>
+<div class="res" id="res">Preencha os itens</div>
+<button class="btn" id="cp">Copiar</button><button class="btn" id="rs">Zerar</button></div></div>
+<script>
+var D=[
+["Nível de consciência","Sono profundo|Sono superficial|Letárgico|Acordado e alerta|Hiperalerta"],
+["Calma / Agitação","Calma|Ansiedade leve|Ansioso|Muito ansioso|Amedrontado"],
+["Resposta respiratória","Ausência de tosse e de respiração espontânea|Respiração espontânea com pouca ou nenhuma resposta à ventilação|Tosse ou resistência ocasional ao ventilador|Respirações ativas contra o ventilador ou tosse regular|Compete com o ventilador, tosse","v"],
+["Choro","Respiração silenciosa, sem som de choro|Resmungando / choramingando|Reclamando (monotônico)|Choro|Gritando","s"],
+["Movimento físico","Ausência de movimento|Movimento leve ocasional|Movimento leve freqüente|Movimento vigoroso limitado às extremidades|Movimento vigoroso que inclui tronco e cabeça"],
+["Tônus muscular","Totalmente relaxado|Hipotônico|Normotônico|Hipertônico com flexão dos dedos e artelhos|Rigidez extrema com flexão de dedos e artelhos"],
+["Tensão facial","Músculos faciais totalmente relaxados|Tônus facial normal, sem tensão evidente|Tensão evidente em alguns músculos faciais|Tensão evidente em toda a face|Músculos faciais contorcidos"]];
+var S={mode:null,v:{}};
+function active(){return D.map(function(d,i){return[d,i]}).filter(function(x){var t=x[0][2];return !t||(t=="v"&&S.mode=="v")||(t=="s"&&S.mode=="s")})}
+function R(){
+var m=document.getElementById("mode");m.innerHTML="";
+[["v","Ventilação mecânica"],["s","Respiração espontânea"]].forEach(function(o){var b=document.createElement("button");b.className="opt"+(S.mode==o[0]?" on":"");b.textContent=o[1];b.onclick=function(){S.mode=o[0];R()};m.appendChild(b)});
+var c=document.getElementById("items");c.innerHTML="";
+active().forEach(function(x){var d=x[0],i=x[1],card=document.createElement("div");card.className="card";
+var h=document.createElement("h2");h.innerHTML="<span>"+d[0]+"</span><small>"+(S.v[i]?S.v[i]+" pt":"–")+"</small>";card.appendChild(h);
+d[1].split("|").forEach(function(t,k){var b=document.createElement("button");b.className="opt"+(S.v[i]==k+1?" on":"");b.innerHTML="<b>"+(k+1)+"</b><span>"+t+"</span>";b.onclick=function(){S.v[i]=k+1;R()};card.appendChild(b)});
+c.appendChild(card)});
+T()}
+function calc(){var a=active(),s=0,n=0;a.forEach(function(x){if(S.v[x[1]]){s+=S.v[x[1]];n++}});return{s:s,n:n,tot:a.length}}
+function cls(s){return s<=10?["Possível sobressedação","var(--wa)"]:s<=17?["Conforto adequado","var(--ok)"]:["Desconforto / dor possível","var(--er)"]}
+function T(){var r=calc(),t=document.getElementById("tot"),e=document.getElementById("res");
+if(!S.mode){t.innerHTML="–<small> /30</small>";e.innerHTML="Escolha a condição respiratória";return}
+if(r.n<r.tot){t.innerHTML=r.s+"<small> /30</small>";e.innerHTML="Faltam "+(r.tot-r.n)+" item(ns)<span>Parcial: "+r.n+"/"+r.tot+"</span>";e.style.color="";return}
+var c=cls(r.s);t.innerHTML=r.s+"<small> /30</small>";e.style.color=c[1];e.innerHTML=c[0]+"<span>≤10 sobressedação · 11–17 adequado · ≥18 desconforto</span>"}
+document.getElementById("rs").onclick=function(){S={mode:null,v:{}};R();scrollTo(0,0)};
+document.getElementById("cp").onclick=function(){var r=calc();if(!S.mode||r.n<r.tot)return;
+var txt="Comfort-B: "+r.s+"/30 – "+cls(r.s)[0]+" ("+(S.mode=="v"?"ventilação mecânica":"respiração espontânea")+")\n"+active().map(function(x){return x[0][0]+": "+S.v[x[1]]}).join("\n");
+var b=document.getElementById("cp");function ok(){b.textContent="Copiado";setTimeout(function(){b.textContent="Copiar"},1500)}
+try{navigator.clipboard.writeText(txt).then(ok,function(){})}catch(e){}};
+R();
+if('serviceWorker' in navigator){addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
+</script></body></html>
